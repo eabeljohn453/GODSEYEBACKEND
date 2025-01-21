@@ -1,0 +1,326 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployments Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body.dark {
+            background-color: rgb(149, 186, 245);
+            color: #cbd5e0;
+        }
+        body.dark .dark-toggle {
+            background-color: rgb(78, 108, 170);
+            color: grey;
+        }
+        #sidebar {
+            overflow-y: auto;
+            height: 100vh;
+        }
+        .main-content {
+            overflow: hidden;
+        }
+        .section {
+            height: 500px;
+        }
+        .hidden {
+            display: none;
+        }
+        .logout-btn {
+    margin-top: auto;
+    padding: 10px 20px; /* Balanced padding */
+    background-color: red;
+    color: white;
+    text-align: center;
+    width: 120px; /* Slightly wider for better readability */
+    font-size: 16px; /* Adjusted for better alignment */
+    cursor: pointer;
+    border-radius: 10px; /* Rounded corners */
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.logout-btn:hover {
+    background-color: #c53030; /* Hover effect */
+    transform: scale(1.05); /* Enlarge slightly on hover */
+}
+
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="flex h-screen">
+        <div id="sidebar" class="w-64 bg-gray-800 flex flex-col p-4">
+            <div class="flex items-center justify-between mb-8">
+                <div id="toggleMenu" class="menu-icon cursor-pointer">
+                    <span id="line1" class="block w-6 h-0.5 bg-white mb-1"></span>
+                    <span id="line2" class="block w-6 h-0.5 bg-white mb-1"></span>
+                    <span id="line3" class="block w-6 h-0.5 bg-white"></span>
+                </div>
+                <h1 class="text-2xl font-bold">Godseye</h1>
+           
+            </div>
+            <nav class="flex flex-col space-y-4">
+                <a href="#" id="liveFeedLink" class="flex items-center px-4 py-2 text-gray-300 rounded hover:bg-gray-700">
+                    <span class="material-icons mr-2">videocam</span> Live Video Feed
+                </a>
+                <a href="#" id="damhLink" class="flex items-center px-4 py-2 text-gray-300 rounded hover:bg-gray-700">
+                    <span class="material-icons mr-2">archive</span> Detection and Message History
+                </a>
+
+                <a href="#" id="muLink" class="flex items-center px-4 py-2 text-gray-300 rounded hover:bg-gray-700">
+                    <span class="material-icons mr-2">people</span> Manage Users
+                </a>
+                <a href="#" id="mmLink" class="flex items-center px-4 py-2 text-gray-300 rounded hover:bg-gray-700">
+                    <span class="material-icons mr-2">message</span> Manage Messages
+                </a>
+            </nav>
+            
+            
+            <div class="mt-auto flex items-center space-x-8">
+                <button id="notificationButton" class="p-2 rounded-full hover:bg-gray-700">
+                    <span class="material-icons">notifications</span>
+                </button>
+    
+                <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-gray-700">
+                    <span class="material-icons">dark_mode</span>
+                </button>
+    
+                <div class="relative">
+                    <img src="https://via.placeholder.com/40" alt="User" class="w-10 h-10 rounded-full cursor-pointer" id="userAvatar">
+                    <div id="avatarDropdown" class="absolute right-0 mt-2 w-40 bg-gray-800 text-white rounded-lg shadow-lg hidden">
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700">Profile</a>
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700">Settings</a>
+                        <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700" id="signOutButton">Sign Out</a>
+                    </div>
+                </div>
+        </div>
+        
+      
+        </div>
+        <div class="flex-1 main-content overflow-y-auto">
+            <div class="bg-gray-800 p-8 shadow-lg mb-9 flex items-center justify-between w-full">
+                <h2 class="text-xl font-bold">Admin</h2>
+                
+                <div id="logoutBtn" class="logout-btn">Logout</div>
+            </div>
+           
+            <div id="live-feed" class="flex justify-center items-center mb-6 section hidden">
+                <div class="bg-black rounded-lg shadow-lg flex items-center justify-center" style="width: 700px; height: 500px;">
+                    <span class="text-white text-lg font-semibold">NO SIGNAL</span>
+                </div>
+            </div>
+            <div id="damh" class="flex justify-center mb-6 section hidden">
+                <div class="bg-gray-800 text-white rounded-lg shadow-lg p-6 flex flex-col justify-between items-center" style="width: 700px; height: 500px;">
+                    <h2 class="text-xl font-semibold mb-4">Detection and Message History</h2>
+                    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white">View History</button>
+                </div>
+            </div>
+            <div id="mu" class="flex justify-center mb-6 section hidden">
+                <div class="bg-gray-800 text-white rounded-lg shadow-lg p-6 flex flex-col justify-between items-center" style="width: 700px; height: 500px;">
+                    <h2 class="text-xl font-semibold mb-4">Manage Users</h2>
+                    
+                    <!-- Add New User Form -->
+                    <div id="addUserForm" class="w-full mb-4">
+                        <h3 class="text-lg font-semibold mb-2">Add New User</h3>
+                        <form id="userForm" class="flex flex-col space-y-2 mb-4">
+                            <input type="text" id="userName" placeholder="Email" class="p-2 bg-gray-700 text-white rounded" style="width: 300px; height: 40px;" required />
+                            <input type="email" id="userEmail" placeholder="Password" class="p-2 bg-gray-700 text-white rounded" style="width: 300px; height: 40px;" required />
+                            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white" style="width: 300px; height: 40px;">Add User</button>
+                        </form>
+                        <p id="userLimitMessage" class="text-red-500 mt-2 hidden">You can only add up to 2 users at a time.</p>
+                    </div>
+            
+                    <!-- User List and Delete Button Container -->
+                    <div class="flex flex-col w-full h-full justify-between items-center overflow-auto">
+                        <!-- User List -->
+                        <div id="userList" class="mb-4 w-full flex flex-col items-center">
+                            <h3 class="text-lg font-semibold mb-2">User List</h3>
+                            <ul id="users" class="list-none space-y-2" style="width: 300px; max-height: 150px; overflow-y: auto;">
+                                <!-- User List Items Will Be Added Here -->
+                            </ul>
+                        </div>
+            
+                        <!-- Delete Button -->
+                        <button class="px-2 py-2 bg-red-600 hover:bg-red-500 rounded text-white mb-4" id="deleteUsersButton" style="width: 180px; height: 40px;">Delete Selected Users</button>
+                    </div>
+                </div>
+            </div>
+            <div id="damh" class="flex justify-center mb-6 section hidden">
+                <div class="bg-gray-800 text-white rounded-lg shadow-lg p-6 flex flex-col justify-between items-center" style="width: 700px; height: 500px;">
+                    <h2 class="text-xl font-semibold mb-4">Detection and Message History</h2>
+                    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white">View History</button>
+                </div>
+            </div>
+            <div id="mm" class="flex justify-center mb-6 section hidden">
+                <div class="bg-gray-800 text-white rounded-lg shadow-lg p-6 flex flex-col justify-between items-center" style="width: 700px; height: 500px;">
+                    <h2 class="text-xl font-semibold mb-4">Manage Messages</h2>
+                    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white">Manage Messages</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+     document.addEventListener('DOMContentLoaded', () => {
+    // Select elements
+    const userForm = document.getElementById('userForm');
+    const userNameInput = document.getElementById('userName');
+    const userEmailInput = document.getElementById('userEmail');
+    const userList = document.getElementById('users');
+    const deleteUsersButton = document.getElementById('deleteUsersButton');
+    const userLimitMessage = document.getElementById('userLimitMessage');
+
+    const liveFeedSection = document.getElementById('live-feed');
+    const damhSection = document.getElementById('damh');
+    const muSection = document.getElementById('mu');
+    const mmSection = document.getElementById('mm');
+
+    let users = []; // Store user data
+
+    // Function to render the user list
+    function renderUserList() {
+        userList.innerHTML = ''; // Clear the list
+        users.forEach((user, index) => {
+            const li = document.createElement('li');
+            li.classList.add('flex', 'items-center', 'space-x-2', 'p-2', 'bg-gray-700', 'rounded');
+            li.innerHTML = `
+                <input type="checkbox" class="user-checkbox" data-index="${index}" />
+                <span>${user.name} (${user.email})</span>
+            `;
+            userList.appendChild(li);
+        });
+    }
+
+    // Handle adding a user
+    userForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        if (users.length >=2) {
+            // If there are already 4 users, show a message
+            userLimitMessage.classList.remove('hidden');
+            return; // Prevent adding more users
+        }
+
+        const newUser = {
+            name: userNameInput.value,
+            email: userEmailInput.value
+        };
+        users.push(newUser);
+        userNameInput.value = '';
+        userEmailInput.value = '';
+        userLimitMessage.classList.add('hidden'); // Hide the message once a user is added
+        renderUserList();
+    });
+
+    // Handle deleting selected users
+    deleteUsersButton.addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.user-checkbox:checked');
+        const selectedIndexes = Array.from(checkboxes).map(checkbox => checkbox.dataset.index);
+
+        users = users.filter((user, index) => !selectedIndexes.includes(String(index)));
+
+        // Re-render the user list after deletion
+        renderUserList();
+    });
+
+    // Sidebar link event listeners to show/hide sections
+    const liveFeedLink = document.getElementById('liveFeedLink');
+    const damhLink = document.getElementById('damhLink');
+    const muLink = document.getElementById('muLink');
+    const mmLink = document.getElementById('mmLink');
+
+    liveFeedLink.addEventListener('click', () => {
+        liveFeedSection.classList.remove('hidden');
+        damhSection.classList.add('hidden');
+        muSection.classList.add('hidden');
+        mmSection.classList.add('hidden');
+    });
+
+    damhLink.addEventListener('click', () => {
+        liveFeedSection.classList.add('hidden');
+        damhSection.classList.remove('hidden');
+        muSection.classList.add('hidden');
+        mmSection.classList.add('hidden');
+    });
+
+    muLink.addEventListener('click', () => {
+        liveFeedSection.classList.add('hidden');
+        damhSection.classList.add('hidden');
+        muSection.classList.remove('hidden');
+        mmSection.classList.add('hidden');
+    });
+
+    mmLink.addEventListener('click', () => {
+        liveFeedSection.classList.add('hidden');
+        damhSection.classList.add('hidden');
+        muSection.classList.add('hidden');
+        mmSection.classList.remove('hidden');
+    });
+
+    // Dark Mode Toggle
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const body = document.body;
+    const darkMode = localStorage.getItem('darkMode');
+    if (darkMode === 'enabled') body.classList.add('dark');
+    darkModeToggle.addEventListener('click', () => {
+        body.classList.toggle('dark');
+        localStorage.setItem('darkMode', body.classList.contains('dark') ? 'enabled' : 'disabled');
+    });
+
+    // Notification Button Animation
+    const notificationButton = document.getElementById('notificationButton');
+    notificationButton.addEventListener('click', () => {
+        notificationButton.classList.add('animate-ping');
+        setTimeout(() => notificationButton.classList.remove('animate-ping'), 300);
+    });
+
+    // Toggle avatar dropdown on click
+    const userAvatar = document.getElementById('userAvatar');
+    const avatarDropdown = document.getElementById('avatarDropdown');
+
+    userAvatar.addEventListener('click', () => {
+        avatarDropdown.classList.toggle('hidden');
+    });
+
+    // Sign out functionality (add your logic here)
+    const signOutButton = document.getElementById('signOutButton');
+    signOutButton.addEventListener('click', () => {
+        alert('Signed out');
+    });
+
+    // Sidebar menu toggle logic
+    const toggleMenu = document.getElementById('toggleMenu');
+    const sidebar = document.getElementById('sidebar');
+    const line1 = document.getElementById('line1');
+    const line2 = document.getElementById('line2');
+    const line3 = document.getElementById('line3');
+
+    toggleMenu.addEventListener('click', () => {
+        sidebar.classList.toggle('show');
+        line1.classList.toggle('rotate-45');
+        line1.classList.toggle('translate-y-2');
+        line2.classList.toggle('opacity-0');
+        line3.classList.toggle('-rotate-45');
+        line3.classList.toggle('-translate-y-2');
+    });
+    
+    // Initial user list rendering
+    renderUserList();
+});
+const signOutButton = document.getElementById('logoutBtn');
+signOutButton.addEventListener('click', () => {
+    // Clear any session data, cookies, or localStorage items related to user login
+    localStorage.removeItem('user'); // If you've saved user info in localStorage
+    sessionStorage.removeItem('user'); // If you've saved session data
+
+    // Optionally, display a sign-out message or confirmation
+    alert('You have been signed out.');
+
+    // Redirect to the login page (change 'login.html' to the actual login page URL)
+    window.location.href = 'http://127.0.0.1:8000/auth/login'; // You can change this to your login page or home page
+});
+
+    </script>
+</body>
+</html>
