@@ -26,3 +26,5 @@ def login_view(request):
 
 def admin_view(request):
     return render(request, 'authentication/admin.html')
+def user_view(request):
+    return render(request,'authentication/user.html')
