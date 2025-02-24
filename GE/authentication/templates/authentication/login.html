@@ -1,11 +1,11 @@
-
-<!DOCTYPE html>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GE Login</title>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -17,13 +17,17 @@
             <img class="w-8 h-8 mr-2" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg" alt="logo">
             GODSEYE    
         </a>
+
         <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
             <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
                 <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                     Sign in to your account
                 </h1>
-                <form class="space-y-4 md:space-y-6" action="{% url 'login' %}" method="POST">
+
+                <!-- ✅ Django Login Form -->
+                <form id="loginForm" class="space-y-4 md:space-y-6" action="{% url 'login' %}" method="POST">
                     {% csrf_token %}
+
                     <!-- Email input -->
                     <div>
                         <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
@@ -40,15 +44,16 @@
                     <div class="flex items-center justify-between">
                         <div class="flex items-start">
                             <div class="flex items-center h-5">
-                              <input id="remember" aria-describedby="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800">
+                                <input id="remember" aria-describedby="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800">
                             </div>
                             <div class="ml-3 text-sm">
-                              <label for="remember" class="text-gray-500 dark:text-gray-300">Remember me</label>
+                                <label for="remember" class="text-gray-500 dark:text-gray-300">Remember me</label>
                             </div>
                         </div>
                         <a href="#" class="text-sm font-medium text-white hover:underline dark:text-white">Forgot password?</a>
-
                     </div> 
+
+                    <!-- Submit Button -->
                     <div>
                         <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             Login 
@@ -57,39 +62,36 @@
                 </form>
             </div>
         </div>
-    </div>
-</section>
-<script>
-document.getElementById('loginForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    if (!email || !password) {
-        this.classList.add('animate-shake');
-        setTimeout(() => this.classList.remove('animate-shake'), 820);
-        return;
-    }
-    
-    console.log('Login attempt:', { email, password });
-    alert('Login attempt successful! Check the console for details.');
-});
+    </section>
 
-const passwordToggle = document.getElementById('passwordToggle');
-const passwordField = document.getElementById('password');
+    <!-- ✅ JavaScript for Form Validation -->
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                this.classList.add('animate-shake');  // Add shake effect if empty
+                setTimeout(() => this.classList.remove('animate-shake'), 820);
+                e.preventDefault();  // Prevent submission if fields are empty
+            }
+        });
 
-passwordToggle?.addEventListener('click', function() {
-    if (passwordField.type === 'password') {
-        passwordField.type = 'text';
-        this.innerHTML = '<i class="far fa-eye-slash"></i>';
-        
-        setTimeout(() => {
-            passwordField.type = 'password';
-            this.innerHTML = '<i class="far fa-eye"></i>';
-        }, 3000);
-    }
-});
-</script>
+        const passwordToggle = document.getElementById('passwordToggle');
+        const passwordField = document.getElementById('password');
+
+        passwordToggle?.addEventListener('click', function() {
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                this.innerHTML = '<i class="far fa-eye-slash"></i>';
+                
+                setTimeout(() => {
+                    passwordField.type = 'password';
+                    this.innerHTML = '<i class="far fa-eye"></i>';
+                }, 3000);
+            }
+        });
+    </script>
+
 </body>
 </html>

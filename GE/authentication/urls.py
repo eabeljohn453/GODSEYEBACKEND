@@ -1,9 +1,8 @@
-# authentication/urls.py
 from django.urls import path
-from . import views
+from .views import login_view, admin_view, logout_view  # Import views
 
 urlpatterns = [
-    path('login/', views.login_view, name='login'),
-    path('admin/', views.admin_view, name='admin'),
-    path('user/', views.user_view, name='user')  # Ensure this is correctly set
+    path('login/', login_view, name='login'),
+    path('admin/', admin_view, name='admin_view'),  # Ensure this is correct
+    path('logout/', logout_view, name='logout'),  # Logout route
 ]
