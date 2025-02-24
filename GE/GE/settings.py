@@ -117,7 +117,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Login & Logout Redirects
 LOGIN_URL = '/auth/login/'  # Redirect unauthenticated users to login page
-LOGIN_REDIRECT_URL = '/auth/admin/'  # Redirect after successful login
+LOGIN_REDIRECT_URL = '/auth/user/'  # Redirect after successful login
 LOGOUT_REDIRECT_URL = '/auth/login/'  # Redirect after logout
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 300  # Optional: Auto logout after 5 minutes (300 seconds)
