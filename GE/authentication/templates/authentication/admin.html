@@ -204,25 +204,55 @@
                     <div id="profile" class="relative">
                         <span class="material-icons cursor-pointer" onclick="toggleProfile()">account_circle</span>
                         <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg">
-                            <p class="p-2">Admin</p>
+                            {% if request.user.is_authenticated %}
+                                 <!-- Display Username -->
+                                <p class="p-2 text-sm text-gray-600">{{ request.user.email }}</p>  <!-- Display Email -->
+                            {% else %}
+                                <p class="p-2">User not logged in</p>
+                            {% endif %}
                             <hr>
                             <a href="{% url 'logout' %}" class="block w-full text-left p-2 hover:bg-gray-200">Logout</a>
                         </div>
                     </div>
+                    
                 </div>
             </div>
 
-            <div id="live-feed" class="flex justify-center items-center mb-6 section hidden mt-16">
-                <div class="bg-black rounded-lg shadow-lg flex items-center justify-center" style="width: 700px; height: 500px;">
-                    <span class="text-white text-lg font-semibold">NO SIGNAL</span>
-                </div>
-            </div>
-            <div id="damh" class="flex justify-center mb-6 section hidden mt-16">
-                <div class="bg-gray-800 text-white rounded-lg shadow-lg p-6 flex flex-col justify-between items-center" style="width: 700px; height: 500px; ">
-                    <h2 class="text-xl font-semibold mb-4">Detection and Message History</h2>
-                    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white">View History</button>
-                </div>
-            </div>
+          
+    <!-- Live Feed Section -->
+    <div id="live-feed" class="flex justify-center items-center mb-6 section mt-16">
+        <div class="bg-black rounded-lg shadow-lg flex items-center justify-center" style="width: 700px; height: 500px;">
+            <img src="{% url 'video_feed' %}" alt="Live Video Feed" />
+        </div>
+    </div>
+    <div id="damh" class="flex justify-center mb-6 section hidden mt-16">
+        <div class="bg-gray-800 text-white rounded-lg shadow-lg p-6 flex flex-col justify-between items-center" style="width: 700px; height: 500px;">
+            <h2 class="text-xl font-semibold mb-4">Detection and Message History</h2>
+    
+            <!-- Detection History -->
+            <h1>Detection History</h1>
+            <ul>
+                {% for detection in detection_history %}
+                    <li>{{ detection.detection_type }} - {{ detection.detected_at|date:"Y-m-d H:i:s" }} - {{ detection.details }}</li>
+                {% empty %}
+                    <li>No detection history available.</li>
+                {% endfor %}
+            </ul>
+    
+            <!-- Threat Messages -->
+            <h1>Messages</h1>
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message.message }} - {{ message.created_at|date:"Y-m-d H:i:s" }}</li>
+                {% empty %}
+                    <li>No threat messages available.</li>
+                {% endfor %}
+            </ul>
+    
+            <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white">View History</button>
+        </div>
+    </div>
+    
             <div id="mu" class="flex justify-center mb-6 section hidden mt-16">
                 <div class="bg-gray-800 text-white rounded-lg shadow-lg p-6 flex flex-col justify-between items-center" style="width: 700px; height: 500px;">
                     <h2 class="text-xl font-semibold mb-4">Manage Users</h2>

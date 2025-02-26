@@ -1,3 +1,6 @@
+from .models import Message, DetectionHistory, ThreatMessage, CustomUser
 from django.contrib import admin
-
-# Register your models here.
+admin.site.register(Message)
+admin.site.register(DetectionHistory)
+admin.site.register(ThreatMessage)
+admin.site.register(CustomUser)

@@ -103,9 +103,10 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 AUTHENTICATION_BACKENDS = [
-    'authentication.backend.EmailBackend',  # Custom email authentication backend
+    'authentication.backend.EmailBackend',  # Custom backend for email/username login
     'django.contrib.auth.backends.ModelBackend',  # Default Django backend
 ]
+
 
 
 
@@ -123,3 +124,9 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 300  # Optional: Auto logout after 5 minutes (300 seconds)
 CACHE_MIDDLEWARE_SECONDS = 0  # Disable caching
 CACHE_MIDDLEWARE_KEY_PREFIX = 'site_cache'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = 'eabeljohn@gmail.com'
+EMAIL_HOST_PASSWORD = '686868'
