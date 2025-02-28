@@ -77,9 +77,9 @@ def generate_frames(request):
         # Process detected objects
         for result in results:
             for box in result.boxes:
-                cls = int(box.cls[0])  # Object Class ID
-                conf = float(box.conf[0])  # Confidence Score
-                x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding Box
+                cls = int(box.cls.item())  # Correct class ID extraction
+                conf = float(box.conf.item())  # Correct confidence score
+                x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())  # Convert to integer
 
                 # Get class label
                 class_label = model.names[cls]

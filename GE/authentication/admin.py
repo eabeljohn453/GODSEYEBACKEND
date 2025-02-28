@@ -1,3 +1,4 @@
+
 from .models import Message, DetectionHistory, ThreatMessage, CustomUser
 from django.contrib import admin
 admin.site.register(Message)
