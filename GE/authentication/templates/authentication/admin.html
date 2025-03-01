@@ -70,6 +70,31 @@
         .logout-btn:hover {
             background-color: #c9302c;
         }
+        input {
+    background: #1c1e26;
+    color: white;
+    border: 1px solid #333;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px #007bff;
+}
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #222;
+}
 
         #sidebar.collapsed .logout-btn {
             width: 90%;
@@ -132,23 +157,47 @@
         }
 
      
-
-        /* Profile Dropdown */
         #profileDropdown {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 40px;
-            background: white;
-            color: black;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 50px; /* Adjusts dropdown positioning */
+    background: white;
+    color: black;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    width: 180px;
+}
 
-        #profileDropdown.active {
-            display: block;
-        }
+#profileDropdown.active {
+    display: block;
+}
+
+#profileDropdown p {
+    padding: 8px;
+    font-size: 14px;
+    color: #333;
+}
+
+#profileDropdown hr {
+    margin: 5px 0;
+    border: 0.5px solid #ddd;
+}
+
+#profileDropdown a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+}
+
+#profileDropdown a:hover {
+    background: #f0f0f0;
+    border-radius: 5px;
+}
+
 
         /* Hidden class */
         .hidden {
@@ -200,20 +249,20 @@
                     <!-- Notification Icon -->
                     <span id="notification" class="material-icons">notifications</span>
 
-                    <!-- User Profile Icon -->
-                    <div id="profile" class="relative">
-                        <span class="material-icons cursor-pointer" onclick="toggleProfile()">account_circle</span>
-                        <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg">
-                            {% if request.user.is_authenticated %}
-                                 <!-- Display Username -->
-                                <p class="p-2 text-sm text-gray-600">{{ request.user.email }}</p>  <!-- Display Email -->
-                            {% else %}
-                                <p class="p-2">User not logged in</p>
-                            {% endif %}
-                            <hr>
-                            <a href="{% url 'logout' %}" class="block w-full text-left p-2 hover:bg-gray-200">Logout</a>
-                        </div>
-                    </div>
+                   <!-- Profile Section -->
+<div id="profile" class="relative">
+    <span class="material-icons cursor-pointer" onclick="toggleProfile()">account_circle</span>
+    <div id="profileDropdown" class="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg hidden">
+        {% if request.user.is_authenticated %}
+            <p class="p-2 text-sm text-gray-600">{{ request.user.email }}</p>
+        {% else %}
+            <p class="p-2">User not logged in</p>
+        {% endif %}
+        <hr>
+        <a href="{% url 'logout' %}" class="block w-full text-left p-2 hover:bg-gray-200">Logout</a>
+    </div>
+</div>
+
                     
                 </div>
             </div>
@@ -263,6 +312,7 @@
                         <form id="userForm" class="flex flex-col space-y-2 mb-4">
                             <input type="text" id="userName" placeholder="Name" class="p-2 bg-gray-700 text-white rounded" style="width: 300px; height: 40px;" required />
                             <input type="email" id="userEmail" placeholder="Email" class="p-2 bg-gray-700 text-white rounded" style="width: 300px; height: 40px;" required />
+                            <input type="password" name="password" id="password" placeholder="••••••••" class="p-2 bg-gray-700 text-white rounded" style="width: 300px; height: 40px;" required />
                             <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white" style="width: 300px; height: 40px;">Add User</button>
                         </form>
                         <p id="userLimitMessage" class="text-red-500 mt-2 hidden">You can only add up to 2 users at a time.</p>
@@ -273,21 +323,29 @@
                         <!-- User List -->
                         <div id="userList" class="mb-4 w-full flex flex-col items-center">
                             <h3 class="text-lg font-semibold mb-2">User List</h3>
-                            <ul id="users" class="list-none space-y-2" style="width: 300px; max-height: 150px; overflow-y: auto;">
-                                <!-- User List Items Will Be Added Here -->
-                            </ul>
-                        </div>
-            
-                        <!-- Delete Button -->
-                        <button class="px-2 py-2 bg-red-600 hover:bg-red-500 rounded text-white mb-4" id="deleteUsersButton" style="width: 180px; height: 40px;">Delete Selected Users</button>
-                    </div>
+                             <ul id="users" class="list-none space-y-2" style="width: 300px; max-height: 150px; overflow-y: auto;">
+        {% for user in users %}
+            <li class="flex justify-between items-center bg-gray-700 p-2 rounded w-full">
+                <input type="checkbox" class="user-checkbox" value="{{ user.id }}">
+                <span>{{ user.email }}</span>
+            </li>
+        {% empty %}
+            <li>No users available.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Delete Button -->
+<button class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded text-white" id="deleteUsersButton">
+    Delete Selected Users
+</button>
                 </div>
             </div>
-            <div id="mm" class="flex justify-center mb-6 section hidden mt-16">
-                <div class="bg-gray-800 text-white rounded-lg shadow-lg p-6 flex flex-col justify-between items-center" style="width: 700px; height: 500px;">
-                    <h2 class="text-xl font-semibold mb-4">Manage Messages</h2>
-                    <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white">Manage Messages</button>
-                </div>
+        </div>
+        <div id="mm" class="flex justify-center mb-6 section hidden mt-16">
+            <div class="bg-gray-800 text-white rounded-lg shadow-lg p-6 flex flex-col justify-between items-center" style="width: 700px; height: 500px;">
+                <h2 class="text-xl font-semibold mb-4">Manage Messages</h2>
+                <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white">Manage Messages</button>
             </div>
         </div>
     </div>
@@ -350,80 +408,91 @@
                 mmSection.classList.remove('hidden');
             });
         });
+        document.addEventListener("DOMContentLoaded", function () {
+    fetchUsers(); // Fetch users when the page loads
+});
 
-        let users = []; // Store user data
+// Handle user form submission
+document.getElementById("userForm").addEventListener("submit", function (e) {
+    e.preventDefault();
 
-        // Function to render the user list
-        function renderUserList() {
-            const userList = document.getElementById('users');
-            userList.innerHTML = ''; // Clear the list
-            users.forEach((user, index) => {
-                const li = document.createElement('li');
-                li.classList.add('flex', 'items-center', 'space-x-2', 'p-2', 'bg-gray-700', 'rounded');
-                li.innerHTML = `
-                    <input type="checkbox" class="user-checkbox" data-index="${index}" />
-                    <span>${user.name} (${user.email})</span>
-                `;
-                userList.appendChild(li);
-            });
+    let name = document.getElementById("userName").value;
+    let email = document.getElementById("userEmail").value;
+    let password = document.getElementById("password").value;
+
+    fetch("/auth/add_user/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": getCookie("csrftoken"),  // Ensure CSRF token is included
+        },
+        body: `name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            alert("User added successfully!");
+            fetchUsers();  // Refresh the user list
         }
+    })
+    .catch(error => console.error("Error:", error));
+});
 
-        // Handle adding a user
-        const userForm = document.getElementById('userForm');
-        const userNameInput = document.getElementById('userName');
-        const userEmailInput = document.getElementById('userEmail');
-        const userLimitMessage = document.getElementById('userLimitMessage');
+// 🔹 Fetch users from the backend
+function fetchUsers() {
+    fetch("/auth/users_list/")  // Ensure this matches the Django URL
+    .then(response => response.json())
+    .then(data => {
+        renderUserList(data.users);  // Update the UI with fetched users
+    })
+    .catch(error => console.error("Error fetching users:", error));
+}
 
-        userForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+// 🔹 Render user list dynamically
+function renderUserList(users) {
+    const userList = document.getElementById('users');
+    userList.innerHTML = ''; // Clear previous list
 
-            if (users.length >= 2) {
-                // If there are already 2 users, show a message
-                userLimitMessage.classList.remove('hidden');
-                return; // Prevent adding more users
+    users.forEach(user => {
+        const li = document.createElement('li');
+        li.classList.add('user-item');
+        li.innerHTML = `<span>${user.username} (${user.email})</span>`;
+        userList.appendChild(li);
+    });
+}
+
+// 🔹 Function to get CSRF token (Required for Django forms)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
-
-            const newUser = {
-                name: userNameInput.value,
-                email: userEmailInput.value
-            };
-            users.push(newUser);
-            userNameInput.value = '';
-            userEmailInput.value = '';
-            userLimitMessage.classList.add('hidden'); // Hide the message once a user is added
-            renderUserList();
-        });
-
-        // Handle deleting selected users
-        const deleteUsersButton = document.getElementById('deleteUsersButton');
-        deleteUsersButton.addEventListener('click', () => {
-            const checkboxes = document.querySelectorAll('.user-checkbox:checked');
-            const selectedIndexes = Array.from(checkboxes).map(checkbox => checkbox.dataset.index);
-
-            users = users.filter((user, index) => !selectedIndexes.includes(String(index)));
-
-            // Re-render the user list after deletion
-            renderUserList();
-        });
-
-        function toggleProfile() {
-            document.getElementById("profileDropdown").classList.toggle("active");
         }
+    }
+    return cookieValue;
+}function toggleProfile() {
+    let profileDropdown = document.getElementById('profileDropdown');
+    profileDropdown.classList.toggle('active');
+}
 
-        // Close dropdown if clicked outside
-        document.addEventListener("click", function (event) {
-            const profile = document.getElementById("profile");
-            const dropdown = document.getElementById("profileDropdown");
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    let profile = document.getElementById('profile');
+    let profileDropdown = document.getElementById('profileDropdown');
 
-            if (!profile.contains(event.target)) {
-                dropdown.classList.remove("active");
-            }
-        });
+    if (!profile.contains(event.target)) {
+        profileDropdown.classList.remove('active');
+    }
+});
 
-        function logout() {
-            alert('Logging out...');
-            window.location.href = 'login.html';
-        }
+
     </script>
 </body>
 </html>

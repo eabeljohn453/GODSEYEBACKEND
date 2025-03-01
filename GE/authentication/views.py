@@ -3,152 +3,134 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import never_cache
 from django.contrib import messages
-from .models import CustomUser, ThreatMessage , DetectionHistory # Ensure CustomUser extends AbstractUser
+from django.http import JsonResponse, StreamingHttpResponse
+from django.contrib.auth.hashers import make_password
+from .models import CustomUser, ThreatMessage, DetectionHistory, Detection
 import cv2
-from .models import Detection, ThreatMessage 
-from django.http import StreamingHttpResponse
 from ultralytics import YOLO  # YOLOv8 Model
 
 # Load YOLOv8 Model (Ensure it detects only knives and guns)
 model = YOLO("yolov8n.pt")  # Load YOLOv8 model
+video_source = 0  # Set CCTV RTSP Stream (Change to actual stream if needed)
 
-# Set CCTV RTSP Stream (Change to actual stream if needed)
-video_source = 0  
 
+def add_user(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        # Ensure no duplicate users
+        if CustomUser.objects.filter(email=email).exists():
+            return JsonResponse({"error": "User with this email already exists"}, status=400)
+
+        # Create user
+        user = CustomUser.objects.create(
+            username=email,  # Use email as username
+            email=email,
+            password=make_password(password),  # Hash password for security
+            user_type="user"  # Ensure it's a regular user, not admin
+        )
+
+        return JsonResponse({"message": "User added successfully"})
+    
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+# 🔹 Fetch and return the list of users in JSON format
+def users_list(request):
+    users = CustomUser.objects.values("username", "email")  # Fetch user details
+    return JsonResponse({"users": list(users)}) 
 
 @login_required
 def admin_dashboard(request):
     detection_history = DetectionHistory.objects.all().order_by('-detected_at')
     messages = ThreatMessage.objects.all().order_by('-created_at')
-
     return render(request, 'authentication/admin.html', {
         'detection_history': detection_history,
         'messages': messages,
-        'user': request.user  # Pass the logged-in user
+        'user': request.user
     })
 
 def dashboard_view(request):
-    # Fetch recent detections
     detection_history = Detection.objects.order_by('-detected_at')[:10]
-    
-    # Fetch messages only if there are detected threats
     messages = ThreatMessage.objects.filter(threat_detected=True) if detection_history else []
+    return render(request, 'admin_dashboard.html', {'detection_history': detection_history, 'messages': messages})
 
-    context = {
-        'detection_history': detection_history,
-        'messages': messages
-    }
-    return render(request, 'admin_dashboard.html', context)
-
-# Function to send alert and store message in session
 def send_alert(threat_detected, request):
     threat_message = f"A {threat_detected} was detected in the CCTV feed. Please check immediately."
-
-    # Append to threat messages list in session
-    if 'threat_messages' not in request.session:
-        request.session['threat_messages'] = []
-    request.session['threat_messages'].append(threat_message)
-
-    # Save to the database
-    save_threat_message(threat_message)
-
+    ThreatMessage.objects.create(message=threat_message)
     print(f"🚨 Threat detected: {threat_detected}, message saved.")
 
-# Save Threat Message to Database
-def save_threat_message(message):
-    try:
-        ThreatMessage.objects.create(message=message)
-        print("✅ Threat message saved:", message)  # Debugging log
-    except Exception as e:
-        print(f"❌ Error saving message: {e}")
-
-# Streaming Video with Object Detection (Knife & Gun Only)
 def generate_frames(request):
-    camera = cv2.VideoCapture(video_source)  # Connect to CCTV
-
+    camera = cv2.VideoCapture(video_source)
     while True:
         success, frame = camera.read()
         if not success:
             break
 
-        # Perform YOLO object detection
         results = model(frame)
-
-        # Process detected objects
         for result in results:
             for box in result.boxes:
-                cls = int(box.cls.item())  # Correct class ID extraction
-                conf = float(box.conf.item())  # Correct confidence score
-                x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())  # Convert to integer
-
-                # Get class label
+                cls = int(box.cls.item())
+                conf = float(box.conf.item())
+                x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
                 class_label = model.names[cls]
-
-                # Detect Only Knives & Guns
                 if class_label in ["knife", "gun"]:
-                    color = (0, 0, 255)  # Red for threats
-                    label = f"{class_label} ({conf:.2f})"
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-                    cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
-                    # 🚨 Send Alert 🚨
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                    cv2.putText(frame, f"{class_label} ({conf:.2f})", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                     send_alert(class_label, request)
 
-        # Convert frame to JPEG
         _, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+from django.views.decorators.csrf import csrf_exempt  # Allow CSRF for API calls
 
-# History View
+@csrf_exempt
+def delete_user(request):
+    if request.method == "POST":
+        user_id = request.POST.get("user_id")
+        try:
+            user = CustomUser.objects.get(id=user_id)
+            user.delete()
+            return JsonResponse({"message": "User deleted successfully"})
+        except CustomUser.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
 def history_view(request):
     detection_history = ThreatMessage.objects.all()
     return render(request, 'history.html', {'detection_history': detection_history})
 
-# Fetch Latest Threat Message
 def latest_threat_view(request):
     latest_threat_message = ThreatMessage.objects.order_by('-created_at').first()
     return render(request, 'your_template.html', {'latest_threat_message': latest_threat_message.message if latest_threat_message else None})
 
-# Video Streaming Route
 def video_feed(request):
     return StreamingHttpResponse(generate_frames(request), content_type='multipart/x-mixed-replace; boundary=frame')
 
-# Login View
 def login_view(request):
     if request.method == "POST":
-        email = request.POST.get('email')  # Fetch email from form
-        password = request.POST.get('password')
-
-        print(f"Attempting login for: {email}")  # Debugging
-        user = authenticate(request, username=email, password=password)  # Change username → email
-
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        user = authenticate(request, username=email, password=password)
         if user is not None:
-            print(f"Login successful for: {user.username}, Type: {user.user_type}")  # Debugging
             login(request, user)
-
-            if user.user_type == 'admin':
-                return redirect('/auth/admin/')
-            else:
-                return redirect('/auth/user/')
-        else:
-            print("Login failed: Invalid credentials")  # Debugging
-            messages.error(request, "Invalid username or password")
-
+            return redirect('/auth/admin/' if user.user_type == "admin" else '/auth/user/')
+        messages.error(request, "Invalid email or password")
     return render(request, 'authentication/login.html')
 
-# Admin View
-@login_required(login_url='login')  # Ensure only logged-in users can access
+@login_required(login_url='login')
 @never_cache
 def admin_view(request):
     if request.user.user_type != 'admin':
         messages.error(request, "Access denied. Admins only.")
         return redirect('user_dashboard')
+    return render(request, 'authentication/admin.html', {'threat_messages': ThreatMessage.objects.all()})
 
-    threat_messages = ThreatMessage.objects.all()
-    return render(request, 'authentication/admin.html', {'threat_messages': threat_messages})
+def users_list(request):
+    return JsonResponse({"users": list(CustomUser.objects.values())})
 
-# User Dashboard View
 @login_required(login_url='login')
 @never_cache
 def user_view(request):
@@ -156,7 +138,6 @@ def user_view(request):
         return redirect('/auth/admin/')  
     return render(request, 'authentication/user.html')
 
-# Logout View
 def logout_view(request):
     logout(request)
     return redirect('login')
