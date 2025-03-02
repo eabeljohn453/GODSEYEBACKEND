@@ -7,6 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
+        .user-checkbox {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    margin-right: 8px;
+    appearance: auto !important;
+    visibility: visible !important;
+}
+
         /* Sidebar Styles */
         #sidebar {
             transition: width 0.3s ease-in-out;
@@ -323,22 +332,28 @@ input:focus {
                         <!-- User List -->
                         <div id="userList" class="mb-4 w-full flex flex-col items-center">
                             <h3 class="text-lg font-semibold mb-2">User List</h3>
-                             <ul id="users" class="list-none space-y-2" style="width: 300px; max-height: 150px; overflow-y: auto;">
-        {% for user in users %}
-            <li class="flex justify-between items-center bg-gray-700 p-2 rounded w-full">
-                <input type="checkbox" class="user-checkbox" value="{{ user.id }}">
-                <span>{{ user.email }}</span>
-            </li>
-        {% empty %}
-            <li>No users available.</li>
-        {% endfor %}
-    </ul>
-</div>
+                            <ul id="users" class="list-none space-y-2" style="width: 300px; max-height: 150px; overflow-y: auto;">
+                                {% for user in users %}
+                                    <li class="flex justify-between items-center bg-gray-700 p-2 rounded w-full">
+                                        <label class="flex items-center space-x-2">
+                                            <input type="checkbox" checked>
 
-<!-- Delete Button -->
-<button class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded text-white" id="deleteUsersButton">
-    Delete Selected Users
-</button>
+                                            <input type="checkbox" class="user-checkbox" value="{{ user.id }}" style="width: 16px; height: 16px; display: inline-block; margin-right: 8px;">
+                                            <span>{{ user.email }}</span>
+                                        </label>
+                                    </li>
+                                {% empty %}
+                                    <li>No users available.</li>
+                                {% endfor %}
+                            </ul>
+                            
+                            
+                            
+                            <!-- Delete Button -->
+                            <button class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded text-white mt-2" id="deleteUsersButton">
+                                Delete Selected Users
+                            </button>
+                            
                 </div>
             </div>
         </div>
@@ -411,8 +426,7 @@ input:focus {
         document.addEventListener("DOMContentLoaded", function () {
     fetchUsers(); // Fetch users when the page loads
 });
-
-// Handle user form submission
+// Handle user form submission (Adding Users)
 document.getElementById("userForm").addEventListener("submit", function (e) {
     e.preventDefault();
 
@@ -424,7 +438,7 @@ document.getElementById("userForm").addEventListener("submit", function (e) {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
-            "X-CSRFToken": getCookie("csrftoken"),  // Ensure CSRF token is included
+            "X-CSRFToken": getCookie("csrftoken"),
         },
         body: `name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
     })
@@ -434,36 +448,42 @@ document.getElementById("userForm").addEventListener("submit", function (e) {
             alert(data.error);
         } else {
             alert("User added successfully!");
+            document.getElementById("userForm").reset(); // Reset form after submission
             fetchUsers();  // Refresh the user list
         }
     })
     .catch(error => console.error("Error:", error));
 });
 
-// 🔹 Fetch users from the backend
+// Fetch users from the backend and render them
 function fetchUsers() {
-    fetch("/auth/users_list/")  // Ensure this matches the Django URL
+    fetch("/auth/users_list/")
     .then(response => response.json())
     .then(data => {
-        renderUserList(data.users);  // Update the UI with fetched users
+        renderUserList(data.users);
     })
     .catch(error => console.error("Error fetching users:", error));
 }
 
-// 🔹 Render user list dynamically
+// Render user list with checkboxes
 function renderUserList(users) {
     const userList = document.getElementById('users');
     userList.innerHTML = ''; // Clear previous list
 
     users.forEach(user => {
         const li = document.createElement('li');
-        li.classList.add('user-item');
-        li.innerHTML = `<span>${user.username} (${user.email})</span>`;
+        li.classList.add('user-item', 'flex', 'items-center', 'space-x-2', 'p-2', 'bg-gray-700', 'rounded');
+
+        li.innerHTML = `
+            <input type="checkbox" class="user-checkbox" value="${user.id}">
+            <span>${user.username} (${user.email})</span>
+        `;
+
         userList.appendChild(li);
     });
 }
 
-// 🔹 Function to get CSRF token (Required for Django forms)
+// Function to get CSRF token (Required for Django forms)
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -477,7 +497,10 @@ function getCookie(name) {
         }
     }
     return cookieValue;
-}function toggleProfile() {
+}
+
+// Handle Profile Dropdown Toggle
+function toggleProfile() {
     let profileDropdown = document.getElementById('profileDropdown');
     profileDropdown.classList.toggle('active');
 }
@@ -487,11 +510,38 @@ document.addEventListener('click', function(event) {
     let profile = document.getElementById('profile');
     let profileDropdown = document.getElementById('profileDropdown');
 
-    if (!profile.contains(event.target)) {
+    if (!profile.contains(event.target) && profileDropdown.classList.contains('active')) {
         profileDropdown.classList.remove('active');
     }
 });
 
+// Handle user deletion
+document.getElementById('deleteUsersButton').addEventListener('click', () => {
+    const checkboxes = document.querySelectorAll('.user-checkbox:checked');
+    const selectedUsers = Array.from(checkboxes).map(checkbox => checkbox.value); // FIXED: Using 'value' instead of 'dataset.index'
+
+    if (selectedUsers.length === 0) {
+        alert("No users selected!");
+        return;
+    }
+
+    fetch('/auth/delete_users/', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify({ users: selectedUsers })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Users deleted successfully!");
+            fetchUsers();  // Fetch updated users
+        }
+    })
+    .catch(error => console.error("Error:", error));
+});
 
     </script>
 </body>

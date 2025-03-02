@@ -38,7 +38,7 @@ def add_user(request):
 
 # 🔹 Fetch and return the list of users in JSON format
 def users_list(request):
-    users = CustomUser.objects.values("username", "email")  # Fetch user details
+    users = CustomUser.objects.values("id","username", "email")  # Fetch user details
     return JsonResponse({"users": list(users)}) 
 
 @login_required
@@ -83,20 +83,23 @@ def generate_frames(request):
         _, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
         yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-from django.views.decorators.csrf import csrf_exempt  # Allow CSRF for API calls
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
+import json
+def manage_users(request):
+    users = CustomUser.objects.all()  # Fetch users from CustomUser model
+    return render(request, 'manage_users.html', {'users': users})
+import json
+from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
-def delete_user(request):
+def delete_users(request):
     if request.method == "POST":
-        user_id = request.POST.get("user_id")
-        try:
-            user = CustomUser.objects.get(id=user_id)
-            user.delete()
-            return JsonResponse({"message": "User deleted successfully"})
-        except CustomUser.DoesNotExist:
-            return JsonResponse({"error": "User not found"}, status=404)
-
-    return JsonResponse({"error": "Invalid request"}, status=400)
+        data = json.loads(request.body)
+        user_ids = data.get("users", [])
+        CustomUser.objects.filter(id__in=user_ids).delete()
+        return JsonResponse({"success": "Users deleted successfully"})
 
 def history_view(request):
     detection_history = ThreatMessage.objects.all()
@@ -108,6 +111,7 @@ def latest_threat_view(request):
 
 def video_feed(request):
     return StreamingHttpResponse(generate_frames(request), content_type='multipart/x-mixed-replace; boundary=frame')
+
 
 def login_view(request):
     if request.method == "POST":
@@ -128,8 +132,7 @@ def admin_view(request):
         return redirect('user_dashboard')
     return render(request, 'authentication/admin.html', {'threat_messages': ThreatMessage.objects.all()})
 
-def users_list(request):
-    return JsonResponse({"users": list(CustomUser.objects.values())})
+
 
 @login_required(login_url='login')
 @never_cache
