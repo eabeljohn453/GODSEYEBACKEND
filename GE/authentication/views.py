@@ -37,9 +37,12 @@ def add_user(request):
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 # 🔹 Fetch and return the list of users in JSON format
+
+
 def users_list(request):
-    users = CustomUser.objects.values("id","username", "email")  # Fetch user details
-    return JsonResponse({"users": list(users)}) 
+    users = CustomUser.objects.filter(user_type="user").values("id", "username", "email")  # Exclude admins
+    return JsonResponse({"users": list(users)})
+
 
 @login_required
 def admin_dashboard(request):

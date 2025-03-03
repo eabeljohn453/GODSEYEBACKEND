@@ -7,212 +7,227 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        .user-checkbox {
-    width: 16px;
-    height: 16px;
-    display: inline-block;
-    margin-right: 8px;
-    appearance: auto !important;
-    visibility: visible !important;
-}
-
-        /* Sidebar Styles */
-        #sidebar {
-            transition: width 0.3s ease-in-out;
-            width: 16rem;
-            min-height: 100vh;
-            background-color: #2d2d2d;
-            border-right: 1px solid #404040;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-            position: relative;
-            left: 0;
-            top: 0;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            padding-top: 1rem;
-        }
-
-        /* When sidebar is collapsed */
-        #sidebar.collapsed {
-            width: 4rem;
-        }
-
-        #sidebar.collapsed .sidebar-text {
-            display: none;
-        }
-
-        /* Sidebar Links */
-        nav a {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        nav a:hover {
-            background-color: #4a5568;
-        }
-
-        /* Logout Button */
-        .logout-btn {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            padding: 12px;
-            text-align: center;
-            color: white;
-            cursor: pointer;
-            background-color: #d9534f;
-            border-radius: 5px;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .logout-btn:hover {
-            background-color: #c9302c;
-        }
-        input {
-    background: #1c1e26;
-    color: white;
-    border: 1px solid #333;
-    padding: 10px;
-    border-radius: 5px;
-}
-
-input:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px #007bff;
-}
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #555;
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-track {
-    background: #222;
-}
-
-        #sidebar.collapsed .logout-btn {
-            width: 90%;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-        }
-
-        /* Main Content */
-        .main-content {
-            position: absolute;
-            left: 16rem;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            padding: 0;
-            background-color: #1a1a1a;
-            transition: left 0.3s ease-in-out;
-        }
-
-        #sidebar.collapsed + .main-content {
-            left: 4rem;
-        }
-
-        /* Dark Mode */
-        body.dark {
-            background-color: #1a1a1a;
-            color: white;
-        }
-
-        /* Header */
-        .header {
-            background-color: #2d2d2d;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .header-icons {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .header-icons .material-icons {
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 28px;
-        }
-
-        .header-icons .material-icons:hover {
-            color: #4a90e2;
-        }
-
-        /* Notification */
-        #notification {
-            position: relative;
-        }
-
-     
-        #profileDropdown {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: 50px; /* Adjusts dropdown positioning */
-    background: white;
-    color: black;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    width: 180px;
-}
-
-#profileDropdown.active {
-    display: block;
-}
-
-#profileDropdown p {
-    padding: 8px;
-    font-size: 14px;
-    color: #333;
-}
-
-#profileDropdown hr {
-    margin: 5px 0;
-    border: 0.5px solid #ddd;
-}
-
-#profileDropdown a {
-    display: block;
-    padding: 10px;
-    text-decoration: none;
-    color: black;
-    font-weight: bold;
-}
-
-#profileDropdown a:hover {
-    background: #f0f0f0;
-    border-radius: 5px;
-}
-
-
-        /* Hidden class */
-        .hidden {
-            display: none;
-        }
-    </style>
+    /* Prevents full-page scrolling */
+    body {
+        overflow: hidden; /* Removes extra scrollbar */
+        height: 100vh;
+        margin: 0;
+    }
+    
+    /* Sidebar Styles */
+    #sidebar {
+        transition: width 0.3s ease-in-out;
+        width: 16rem;
+        min-height: 100vh;
+        background-color: #2d2d2d;
+        border-right: 1px solid #404040;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+        position: relative;
+        left: 0;
+        top: 0;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        padding-top: 1rem;
+        overflow-y: auto; /* Allows sidebar scrolling if needed */
+        overflow-x: hidden;
+    }
+    
+    /* When sidebar is collapsed */
+    #sidebar.collapsed {
+        width: 4rem;
+    }
+    
+    #sidebar.collapsed .sidebar-text {
+        display: none;
+    }
+    
+    /* Sidebar Links */
+    nav a {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+    
+    nav a:hover {
+        background-color: #4a5568;
+    }
+    
+    /* Logout Button */
+    .logout-btn {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        padding: 12px;
+        text-align: center;
+        color: white;
+        cursor: pointer;
+        background-color: #d9534f;
+        border-radius: 5px;
+        transition: background 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .logout-btn:hover {
+        background-color: #c9302c;
+    }
+    
+    /* Form Input Styling */
+    input {
+        background: #1c1e26;
+        color: white;
+        border: 1px solid #333;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    
+    input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px #007bff;
+    }
+    
+    /* Scrollbar Styles */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #555;
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #222;
+    }
+    
+    /* Main Content */
+    .main-content {
+        position: absolute;
+        left: 16rem;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        overflow: hidden; /* Prevents outer scrolling */
+        background-color: #1a1a1a;
+        transition: left 0.3s ease-in-out;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    #sidebar.collapsed + .main-content {
+        left: 4rem;
+    }
+    
+    /* User List Container (Ensures scrolling only inside this section) */
+    .user-list-container {
+        max-height: calc(100vh - 100px); /* Adjust dynamically */
+        overflow-y: auto; /* Enables scrolling inside the user list */
+        overflow-x: hidden;
+    }
+    
+    /* Dark Mode */
+    body.dark {
+        background-color: #1a1a1a;
+        color: white;
+    }
+    
+    /* Header */
+    .header {
+        background-color: #2d2d2d;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Header Icons */
+    .header-icons {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+    
+    .header-icons .material-icons {
+        cursor: pointer;
+        transition: 0.3s;
+        font-size: 28px;
+    }
+    
+    .header-icons .material-icons:hover {
+        color: #4a90e2;
+    }
+    
+    /* Notification */
+    #notification {
+        position: relative;
+    }
+    
+    /* Profile Dropdown */
+    #profileDropdown {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 50px; /* Adjusts dropdown positioning */
+        background: white;
+        color: black;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        width: 180px;
+    }
+    
+    #profileDropdown.active {
+        display: block;
+    }
+    
+    #profileDropdown p {
+        padding: 8px;
+        font-size: 14px;
+        color: #333;
+    }
+    
+    #profileDropdown hr {
+        margin: 5px 0;
+        border: 0.5px solid #ddd;
+    }
+    
+    #profileDropdown a {
+        display: block;
+        padding: 10px;
+        text-decoration: none;
+        color: black;
+        font-weight: bold;
+    }
+    
+    #profileDropdown a:hover {
+        background: #f0f0f0;
+        border-radius: 5px;
+    }
+    
+    /* Checkbox Styling */
+    .user-checkbox {
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        margin-right: 8px;
+        appearance: auto !important;
+        visibility: visible !important;
+    }
+    
+    /* Hide Elements */
+    .hidden {
+        display: none;
+    }
+</style>    
 </head>
 
 <body class="bg-gray-900 text-white">
@@ -357,13 +372,14 @@ input:focus {
                 </div>
             </div>
         </div>
+    </div>
         <div id="mm" class="flex justify-center mb-6 section hidden mt-16">
             <div class="bg-gray-800 text-white rounded-lg shadow-lg p-6 flex flex-col justify-between items-center" style="width: 700px; height: 500px;">
                 <h2 class="text-xl font-semibold mb-4">Manage Messages</h2>
                 <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white">Manage Messages</button>
             </div>
         </div>
-    </div>
+   
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
